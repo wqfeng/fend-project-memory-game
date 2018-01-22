@@ -1,20 +1,10 @@
-# Memory Game Project
+# Welcome to Memory Game!
 
-## Table of Contents
 
-* [Instructions](#instructions)
-* [Contributing](#contributing)
+You just need to open the `index.html` to let the fun begin~
 
-## Instructions
+## Dependencies
 
-The starter project has some HTML and CSS styling to display a static version of the Memory Game project. You'll need to convert this project from a static project to an interactive one. This will require modifying the HTML and CSS files, but primarily the JavaScript file.
+I build this game with native dom methods to keep the code clean. It doesn't depend any 3rd party libraries. No more jQuery and Boostrap. Just HTML, CSS and JavaScript! I find the new Udacity courses on ES6 is awesome!
 
-To get started, open `js/app.js` and start building out the app's functionality
 
-For specific, detailed instructions, look at the project instructions in the [Udacity Classroom](https://classroom.udacity.com/me).
-
-## Contributing
-
-This repository is the starter code for _all_ Udacity students. Therefore, we most likely will not accept pull requests.
-
-For details, check out [CONTRIBUTING.md](CONTRIBUTING.md).
