@@ -9,15 +9,8 @@ const cards = [...symbols, ...symbols];
 const open_cards = [];
 
 let moves = 0;
-
-
-
-/*
- * Display the cards on the page
- *   - shuffle the list of cards using the provided "shuffle" method below
- *   - loop through each card and create its HTML
- *   - add each card's HTML to the page
- */
+let seconds = 0;
+let intervalID = null;
 
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
@@ -37,27 +30,30 @@ function shuffle(array) {
 function displayCards(cards) {
     //initialize
     moves = 0;
+    seconds = 0;
+    // empty the open_cards array
+    // credit to: https://stackoverflow.com/questions/1232040/how-do-i-empty-an-array-in-javascript
+    open_cards.length = 0;
     updateMoves(moves);
-    rate(50);
+    updateTime(seconds);
     const shuffled_cards = shuffle(cards);
+    const container = document.querySelector(".container");
     const deck = document.querySelector(".deck");
-    const parent = deck.parentElement;
+
     // clear the deck first
-    deck.remove();
+    deck && deck.remove();
     const newDeck = document.createElement("ul");
     newDeck.className = "deck";
-
-    // create a fragment to boost avoid repaint in the loop.
-    const fragment = document.createDocumentFragment();
+    
+    // build cards
     for (const card of cards) {
         const li = document.createElement("li");
         li.className = "card";
         li.innerHTML = `<i class="fa ${card}"></i>`;
 
-        fragment.appendChild(li);
+        newDeck.appendChild(li);
     }
-    newDeck.appendChild(fragment);
-    parent.appendChild(newDeck);
+    container.appendChild(newDeck);
 }
 
  function addListeners() {
@@ -66,25 +62,32 @@ function displayCards(cards) {
     deck.addEventListener("click", function(event) {
         const target = event.target;
         if (target.tagName.toLowerCase() === "li" && !open_cards.includes(target)) {
-            moves += 1;
-            updateMoves(moves);
             flipCard(target);
+            // start timer when first click
+            if (moves === 0 && open_cards.length === 0) {
+                startTimer();
+            }
             if (open_cards.length % 2 === 0) {
                 open_cards.push(target);
             }
             else {
+                moves += 1;
                 if (isMatch(target)) {
+                    // TODO: add some animation when match.
                     open_cards.push(target);
                     if (open_cards.length === 16) {
+                        const [m, s] = convertTime(seconds);
                         setTimeout(() => {
-                            rate(moves);
-                            alert("You Win! Click restart to play again.");
-                        }, 1000);
+                            clearInterval(intervalID);
+                            // TODO: change the ugly alert box to a modal dialog.
+                            alert(`You Win the game with ${moves} moves within ${m} minutes and ${s} seconds! You get ${rate(moves)} starts our of 3. Click restart to play again.`);
+                        }, 500);
                     };
                 }
                 else {
                     const card = open_cards.pop();
                     setTimeout(() => {
+                        // TODO: add some animation when unmatch.
                         flipCard(card);
                         flipCard(target);
                     }, 1000);
@@ -97,9 +100,27 @@ function displayCards(cards) {
     restartNode.addEventListener("click", restart)
  }
 
+ function startTimer() {
+     intervalID = setInterval(function(){
+         updateTime(++seconds);
+         updateMoves(moves);
+     }, 1000);
+ }
+
+ function updateTime(seconds) {
+     const [m, s] = convertTime(seconds);
+     const timer = document.querySelector(".timer");
+     timer.textContent = `${m < 10 ? "0" + m: m}:${s < 10 ? "0" + s : s}`
+ }
+
+ function convertTime(seconds) {
+     return [Math.floor(seconds / 60), seconds % 60];
+ }
+
  function updateMoves(moves) {
     const movesNode = document.querySelector(".moves");
     movesNode.textContent = moves;
+    updateStars(rate(moves));
  }
 
  function getCardName(target) {
@@ -117,43 +138,40 @@ function displayCards(cards) {
  }
 
  function restart() {
+    intervalID && clearInterval(intervalID);
     displayCards(cards);
     addListeners();
  }
 
  function rate(moves) {
-    const startList = document.querySelector(".stars").children;
-    if (moves >= 50) {
-        for (const item of startList) {
-            item.firstElementChild.classList.remove("fa-star");
-            item.firstElementChild.classList.add("fa-star-o");
-        }
-    }
-    else if (moves > 30){
-        startList[0].firstElementChild.classList.remove("fa-star-o");
-        startList[0].firstElementChild.classList.add("fa-star");
-        startList[1].firstElementChild.classList.remove("fa-star");
-        startList[1].firstElementChild.classList.add("fa-star-o");
-        startList[2].firstElementChild.classList.remove("fa-star");
-        startList[2].firstElementChild.classList.add("fa-star-o");
-
-    }
-    else if (moves > 20) {
-        startList[0].firstElementChild.classList.remove("fa-star-o");
-        startList[0].firstElementChild.classList.add("fa-star");
-        startList[1].firstElementChild.classList.remove("fa-star-o");
-        startList[1].firstElementChild.classList.add("fa-star");
-        startList[2].firstElementChild.classList.remove("fa-star");
-        startList[2].firstElementChild.classList.add("fa-star-o");
-    }
-    else {
-        for (const item of startList) {
-            item.firstElementChild.classList.remove("fa-star-o");
-            item.firstElementChild.classList.add("fa-star");
-        }
-    }
+     if (moves > 25) {
+         return 0;
+     }
+     else if (moves > 15) {
+         return 1;
+     }
+     else if(moves > 10) {
+         return 2;
+     }
+     else {
+         return 3;
+     }
  }
 
+ function updateStars(stars) {
+    const startList = document.querySelector(".stars");
+    startList.innerHTML = "";
+    for (let i = 0; i < stars; i++) {
+        const li = document.createElement("li");
+        li.innerHTML = `<i class="fa fa-star"></i>`;
+        startList.appendChild(li);
+    }
+    for (let i = 0; i < 3 - stars; i++) {
+        const li = document.createElement("li");
+        li.innerHTML = `<i class="fa fa-star-o"></i>`;
+        startList.appendChild(li);
+    }
+ }
 
  displayCards(cards);
  addListeners();
