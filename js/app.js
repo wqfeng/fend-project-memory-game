@@ -12,6 +12,9 @@ let moves = 0;
 let seconds = 0;
 let intervalID = null;
 
+const winnerModal = document.getElementById("winner");
+const winnerMessage = document.getElementById('winner-message');
+
 // Shuffle function from http://stackoverflow.com/a/2450976
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -79,8 +82,8 @@ function displayCards(cards) {
                         const [m, s] = convertTime(seconds);
                         setTimeout(() => {
                             clearInterval(intervalID);
-                            // TODO: change the ugly alert box to a modal dialog.
-                            alert(`You Win the game with ${moves} moves within ${m} minutes and ${s} seconds! You get ${rate(moves)} starts our of 3. Click restart to play again.`);
+                            winnerModal.style.display = "block";
+                            winnerMessage.textContent = `You Win the game with ${moves} moves within ${m} minutes and ${s} seconds! You get ${rate(moves)} starts our of 3.`;
                         }, 500);
                     };
                 }
@@ -98,6 +101,11 @@ function displayCards(cards) {
 
     const restartNode = document.querySelector(".restart");
     restartNode.addEventListener("click", restart)
+
+    const playAgain = document.querySelector(".play-again");
+    playAgain.addEventListener("click", () => {
+        winnerModal.style.display = "none";
+        restart();});
  }
 
  function startTimer() {
@@ -144,10 +152,7 @@ function displayCards(cards) {
  }
 
  function rate(moves) {
-     if (moves > 25) {
-         return 0;
-     }
-     else if (moves > 15) {
+     if (moves > 15) {
          return 1;
      }
      else if(moves > 10) {
